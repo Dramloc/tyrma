@@ -41,14 +41,12 @@ const configurationSpecification: Specification<Dungeon.DungeonOptions> = {
         type: {
           mu: {
             type: "number",
-            min: 0.05,
-            default: 0.5,
-            max: 0.95,
+            default: 0.1,
             step: 0.05,
           },
           sigma: {
             type: "number",
-            default: 0.5,
+            default: 1,
             min: 0,
             step: 0.1,
           },

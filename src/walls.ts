@@ -31,10 +31,42 @@ export const generate = (options: WallsOptions): Walls => {
 
   // Empty an area in each room
   const walls = rooms.reduce((walls, { x, y, width, height }) => {
-    const paddingTop = 1; // Random.unitToIntRange(0, height / 3, random());
-    const paddingRight = 1; // Random.unitToIntRange(0, width / 3, random());
-    const paddingBottom = 1; // Random.unitToIntRange(0, height / 3, random());
-    const paddingLeft = 1; // Random.unitToIntRange(0, width / 3, random());
+    const paddingTop = Random.clamp(
+      0,
+      height,
+      Random.unitPairToGaussianDistribution(
+        { mu: options.padding.mu * height, sigma: options.padding.sigma },
+        random(),
+        random()
+      )
+    );
+    const paddingRight = Random.clamp(
+      0,
+      width,
+      Random.unitPairToGaussianDistribution(
+        { mu: options.padding.mu * width, sigma: options.padding.sigma },
+        random(),
+        random()
+      )
+    );
+    const paddingBottom = Random.clamp(
+      0,
+      height,
+      Random.unitPairToGaussianDistribution(
+        { mu: options.padding.mu * height, sigma: options.padding.sigma },
+        random(),
+        random()
+      )
+    );
+    const paddingLeft = Random.clamp(
+      0,
+      width,
+      Random.unitPairToGaussianDistribution(
+        { mu: options.padding.mu * width, sigma: options.padding.sigma },
+        random(),
+        random()
+      )
+    );
     const paddedArea = {
       x: x + paddingLeft,
       y: y + paddingTop,
