@@ -69,17 +69,14 @@ export const App = () => {
   );
   return (
     <>
+      <pre>
+        <code>{dungeon}</code>
+      </pre>
       <ConfigurationEditor<Dungeon.DungeonOptions>
         value={configuration}
         specification={configurationSpecification}
         onChange={setConfiguration}
       />
-      <pre>
-        <code>{JSON.stringify(configuration, null, 2)}</code>
-      </pre>
-      <pre>
-        <code>{dungeon}</code>
-      </pre>
     </>
   );
 };
