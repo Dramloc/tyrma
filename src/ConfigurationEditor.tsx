@@ -69,7 +69,7 @@ export function getDefaultConfiguration<T>(specification: Specification<T>): T {
 
 const EditorWrapper = styled.div({
   display: "inline-block",
-  fontFamily: ["Lucida Console", "Monaco", "monospace"].join(","),
+  fontFamily: ["Lucida Console", "Monaco", "monospace"].join(),
   fontSize: "0.75rem",
   lineHeight: 2,
   backgroundColor: "#1e1e1e",
@@ -95,7 +95,7 @@ const FieldWrapper = styled.label<{ as: React.ElementType }>({
 
 const FieldInput = styled.input({
   color: "#b5cea8",
-  background: "rgba(0,0,0,0.1)",
+  backgroundColor: "rgba(0, 0, 0, 0.1)",
   padding: "0.25rem 0.5rem",
   border: 0,
   fontFamily: "inherit",
@@ -103,6 +103,18 @@ const FieldInput = styled.input({
   borderRadius: 5,
   minWidth: "auto",
   width: "auto",
+  transitionTimingFunction: "cubic-bezier(0.4, 0.0, 0.2, 1)",
+  transitionDuration: "175ms",
+  transitionProperty: ["box-shadow", "background-color"].join(),
+  "&:hover": {
+    backgroundColor: "rgba(0, 167, 255, 0.05)",
+    boxShadow: "0 0 0 2px rgba(0, 167, 255, 0.15)",
+  },
+  "&:focus": {
+    outline: "none",
+    backgroundColor: "rgba(0, 167, 255, 0.1)",
+    boxShadow: "0 0 0 2px rgba(0, 167, 255, 0.25)",
+  },
 });
 
 export type ConfigurationEditorProps<T> = {
