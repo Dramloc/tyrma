@@ -18,7 +18,7 @@ const createCorridor = (
   areaA: Area.Area,
   areaB: Area.Area,
   walls: Walls
-): Walls => {
+): void => {
   const xA = areaA.x + Math.floor(random() * areaA.width);
   const xB = areaB.x + Math.floor(random() * areaB.width);
   const yA = areaA.y + Math.floor(random() * areaA.height);
@@ -29,24 +29,21 @@ const createCorridor = (
   const toY = Math.max(yA, yB);
   const halfwayY = Math.floor((fromY + toY) / 2);
 
-  let wallsWithCorridor = walls;
   for (let y = fromY; y <= halfwayY; y++) {
-    wallsWithCorridor = Grid.set(fromX, y, true, wallsWithCorridor);
+    Grid.set(fromX, y, true, walls);
   }
   for (let x = Math.min(fromX, toX); x <= Math.max(fromX, toX); x++) {
-    wallsWithCorridor = Grid.set(x, halfwayY, true, wallsWithCorridor);
+    Grid.set(x, halfwayY, true, walls);
   }
   for (let y = halfwayY + 1; y <= toY; y++) {
-    wallsWithCorridor = Grid.set(toX, y, true, wallsWithCorridor);
+    Grid.set(toX, y, true, walls);
   }
-
-  return wallsWithCorridor;
 };
 
 export const generate = (options: WallsOptions): Walls => {
   const { width, height, random } = options;
   // Start with a grid filled with walls
-  const initialWalls = Grid.of({
+  const walls = Grid.of({
     width,
     height,
     initializer: () => false,
@@ -116,9 +113,11 @@ export const generate = (options: WallsOptions): Walls => {
   const rooms = Tree.leaves(paddedPartition).map(Tree.node);
 
   // Empty an area in each room
-  const wallsWithRooms = rooms.reduce((walls, room) => Grid.setArea(room, true, walls), initialWalls);
+  rooms.forEach((room) => {
+    Grid.setArea(room, true, walls);
+  });
 
-  const wallsWithCoridors = Tree.branches(paddedPartition).reduce((wallsWithCoridors, branch) => {
+  Tree.branches(paddedPartition).forEach((branch) => {
     const leftRooms = Tree.leaves(Tree.left(branch))
       .map(Tree.node)
       .filter((room) => room.width !== 0 && room.height !== 0);
@@ -128,21 +127,16 @@ export const generate = (options: WallsOptions): Walls => {
     const leftRoom = leftRooms[Math.floor(random() * leftRooms.length)];
     const rightRoom = rightRooms[Math.floor(random() * rightRooms.length)];
     if (leftRoom && rightRoom) {
-      return createCorridor({ random }, leftRoom, rightRoom, wallsWithCoridors);
-    } else {
-      return wallsWithCoridors;
+      createCorridor({ random }, leftRoom, rightRoom, walls);
     }
-  }, wallsWithRooms);
+  });
 
-  const walls = Grid.mapWithCoordinates((value, x, y) => {
-    if (value === true) {
-      return true;
+  // Collapse 1-wide north-south walls
+  Grid.forEachWithCoordinates((value, x, y) => {
+    if (value === false && Grid.get(x, y - 1, walls) === true && Grid.get(x, y + 1, walls) === true) {
+      Grid.set(x, y, true, walls);
     }
-    if (Grid.get(x, y - 1, wallsWithCoridors) === true && Grid.get(x, y + 1, wallsWithCoridors) === true) {
-      return true;
-    }
-    return false;
-  }, wallsWithCoridors);
+  }, walls);
 
   return walls;
 };
