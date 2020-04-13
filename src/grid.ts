@@ -54,6 +54,19 @@ export const mapWithCoordinates = <T, U>(fn: (value: T, x: number, y: number) =>
   };
 };
 
+export const forEach = <T>(fn: (value: T) => void, grid: Grid<T>): void => {
+  grid.data.forEach(fn);
+};
+
+export const forEachWithCoordinates = <T>(fn: (value: T, x: number, y: number) => void, grid: Grid<T>): void => {
+  const $forEachWithCoordinates = (value: T, i: number) => {
+    const x = i % grid.width;
+    const y = Math.floor(i / grid.width);
+    fn(value, x, y);
+  };
+  grid.data.forEach($forEachWithCoordinates);
+};
+
 export const row = <T>(y: number, grid: Grid<T>): T[] => {
   const row = grid.data.slice(y * grid.width, (y + 1) * grid.width);
   return row;
