@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+/* eslint-env browser, worker */
 import tileset from "./assets/dungeon-tileset.json";
 import tilesetImage from "./assets/dungeon-tileset.png";
 import * as Dungeon from "./dungeon";
@@ -37,13 +37,11 @@ const memoize = <T extends any[], U>(fn: (...args: T) => U) => {
   return memoized;
 };
 
-const loadTexture = (path: string): Promise<HTMLImageElement> => {
-  const texture = new Image();
-  texture.src = path;
-  return new Promise((resolve, reject) => {
-    texture.addEventListener("load", () => resolve(texture));
-    texture.addEventListener("error", reject);
-  });
+const loadTexture = async (path: string): Promise<ImageBitmap> => {
+  const response = await fetch(path);
+  const blob = await response.blob();
+  const image = await createImageBitmap(blob);
+  return image;
 };
 
 const getSlicesBounds = memoize((sliceName: string): SliceBounds[] => {
@@ -57,26 +55,23 @@ const getSlicesBounds = memoize((sliceName: string): SliceBounds[] => {
     .map((key) => key.bounds);
 });
 
-const getBounds = (sliceName: string, dx: number, dy: number): SliceBounds | null => {
+const getBounds = (sliceName: string, dx: number, dy: number): SliceBounds | never => {
   const random = Random.createGenerator(`${dx}.${dy}`);
   const slicesBounds = getSlicesBounds(sliceName);
-  if (slicesBounds.length === 0) {
-    return null;
+  if (process.env.NODE_ENV !== "production" && slicesBounds.length === 0) {
+    throw new Error(`Unknown slice ${sliceName}`);
   }
   return slicesBounds[Math.floor(random() * slicesBounds.length)];
 };
 
 const drawImage = (
-  texture: HTMLImageElement,
-  ctx: CanvasRenderingContext2D,
+  texture: ImageBitmap,
+  ctx: OffscreenCanvasRenderingContext2D,
   slicePrefix: string,
   dx: number,
   dy: number
 ): void => {
   const sliceBounds = getBounds(slicePrefix, dx, dy);
-  if (sliceBounds === null) {
-    return;
-  }
   ctx.drawImage(
     texture,
     sliceBounds.x,
@@ -281,7 +276,7 @@ const getDrawImageOperations = memoize((neighboors: number): [string, number, nu
   return drawImageOperations;
 });
 
-const renderCell = (tilesetTexture: HTMLImageElement, ctx: CanvasRenderingContext2D, dungeon: Dungeon.Dungeon) => {
+const renderCell = (tilesetTexture: ImageBitmap, ctx: OffscreenCanvasRenderingContext2D, dungeon: Dungeon.Dungeon) => {
   const renderCellWithContext = (value: boolean, x: number, y: number): void => {
     const north = Grid.get(x, y - 1, dungeon.walls);
     const northNorthWest = Grid.get(x - 1, y - 2, dungeon.walls);
@@ -321,9 +316,16 @@ const renderCell = (tilesetTexture: HTMLImageElement, ctx: CanvasRenderingContex
   return renderCellWithContext;
 };
 
-const textureCache: { [key: string]: HTMLImageElement } = {};
+const textureCache: { [key: string]: ImageBitmap } = {};
 
-const render = (dungeon: Dungeon.Dungeon, ctx: CanvasRenderingContext2D, zoom: number, dx: number, dy: number) => {
+const render = (
+  dungeon: Dungeon.Dungeon,
+  ctx: OffscreenCanvasRenderingContext2D,
+  dpr: number,
+  zoom: number,
+  dx: number,
+  dy: number
+) => {
   let tilesetTexture = null;
   if (textureCache[tilesetImage] !== undefined) {
     tilesetTexture = textureCache[tilesetImage];
@@ -336,68 +338,58 @@ const render = (dungeon: Dungeon.Dungeon, ctx: CanvasRenderingContext2D, zoom: n
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.save();
   ctx.imageSmoothingEnabled = false;
-  ctx.translate(dx * devicePixelRatio, dy * devicePixelRatio);
-  ctx.scale(devicePixelRatio * zoom, devicePixelRatio * zoom);
+  ctx.translate(dx * dpr, dy * dpr);
+  ctx.scale(dpr * zoom, dpr * zoom);
   const $renderCell = renderCell(tilesetTexture, ctx, dungeon);
   Grid.forEachWithCoordinates($renderCell, dungeon.walls);
   ctx.restore();
 };
 
-export const Renderer2D: React.FC<{ dungeon: Dungeon.Dungeon; zoom: number; dx: number; dy: number }> = ({
-  dungeon,
-  zoom,
-  dx,
-  dy,
-}) => {
-  const width = dungeon.walls.width * 16;
-  const height = dungeon.walls.height * 16;
+let canvas: OffscreenCanvas | null = null;
+let ctx: OffscreenCanvasRenderingContext2D | null = null;
 
-  const dungeonRef = useRef(dungeon);
-  useEffect(() => {
-    dungeonRef.current = dungeon;
-  }, [dungeon]);
+let dpr = 1;
+let dx = 0;
+let dy = 0;
+let zoom = 0;
+let dungeon: Dungeon.Dungeon | null = null;
 
-  const zoomRef = useRef(zoom);
-  useEffect(() => {
-    zoomRef.current = zoom;
-  }, [zoom]);
-
-  const dxRef = useRef(dx);
-  useEffect(() => {
-    dxRef.current = dx;
-  }, [dx]);
-
-  const dyRef = useRef(dy);
-  useEffect(() => {
-    dyRef.current = dy;
-  }, [dy]);
-
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const contextRef = useRef<CanvasRenderingContext2D | null>(null);
-  useEffect(() => {
-    if (canvasRef.current !== null) {
-      const ctx = canvasRef.current.getContext("2d");
-      contextRef.current = ctx;
-    }
-  }, [dungeon, dx, dy, zoom]);
-
-  useEffect(() => {
-    const animate = () => {
-      animationFrame = window.requestAnimationFrame(animate);
-      if (contextRef.current !== null) {
-        render(dungeonRef.current, contextRef.current, zoomRef.current, dxRef.current, dyRef.current);
-      }
-    };
-    let animationFrame = window.requestAnimationFrame(animate);
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ width, height }}
-      width={width * devicePixelRatio}
-      height={height * devicePixelRatio}
-    />
-  );
+const animate = () => {
+  requestAnimationFrame(animate);
+  if (dungeon === null || ctx === null) {
+    return;
+  }
+  render(dungeon, ctx, dpr, zoom, dx, dy);
 };
+
+globalThis.addEventListener("message", (e) => {
+  const action = e.data;
+  switch (action.type) {
+    case "INIT": {
+      canvas = action.payload as OffscreenCanvas;
+      ctx = canvas.getContext("2d");
+      animate();
+      break;
+    }
+    case "SET_DUNGEON": {
+      dungeon = action.payload as Dungeon.Dungeon;
+      break;
+    }
+    case "SET_ZOOM": {
+      zoom = action.payload;
+      break;
+    }
+    case "SET_DX": {
+      dx = action.payload;
+      break;
+    }
+    case "SET_DY": {
+      dy = action.payload;
+      break;
+    }
+    case "SET_DPR": {
+      dy = action.payload;
+      break;
+    }
+  }
+});
