@@ -81,12 +81,22 @@ export const App = () => {
   const [dy, setDy] = useState(0);
   const start = useRef<{ x: number; y: number } | null>(null);
   useEffect(() => {
+    const handleStart = (location: { clientX: number; clientY: number }) => {
+      start.current = { x: location.clientX - dx, y: location.clientY - dy };
+    };
     const onMouseDownListener = (e: MouseEvent) => {
-      start.current = { x: e.x - dx, y: e.y - dy };
+      handleStart(e);
       document.body.style.cursor = "move";
     };
+    const onTouchStartListener = (e: TouchEvent) => {
+      handleStart(e.touches[0]);
+    };
     document.body.addEventListener("mousedown", onMouseDownListener);
-    return () => document.body.removeEventListener("mousedown", onMouseDownListener);
+    document.body.addEventListener("touchstart", onTouchStartListener);
+    return () => {
+      document.body.removeEventListener("mousedown", onMouseDownListener);
+      document.body.removeEventListener("touchstart", onTouchStartListener);
+    };
   }, [dx, dy]);
 
   useEffect(() => {
@@ -95,19 +105,35 @@ export const App = () => {
       document.body.style.cursor = "default";
     };
     document.body.addEventListener("mouseup", onMouseUpListener);
-    return () => document.body.removeEventListener("mouseup", onMouseUpListener);
+    document.body.addEventListener("mouseleave", onMouseUpListener);
+    document.body.addEventListener("touchend", onMouseUpListener);
+    return () => {
+      document.body.removeEventListener("mouseup", onMouseUpListener);
+      document.body.removeEventListener("mouseleave", onMouseUpListener);
+      document.body.removeEventListener("touchend", onMouseUpListener);
+    };
   }, []);
 
   useEffect(() => {
-    const onMouseMoveListener = (e: MouseEvent) => {
+    const handleMove = (location: { clientX: number; clientY: number }) => {
       if (start.current === null) {
         return;
       }
-      setDx(e.x - start.current.x);
-      setDy(e.y - start.current.y);
+      setDx(location.clientX - start.current.x);
+      setDy(location.clientY - start.current.y);
+    };
+    const onMouseMoveListener = (e: MouseEvent) => {
+      handleMove(e);
+    };
+    const onTouchMoveListener = (e: TouchEvent) => {
+      handleMove(e.touches[0]);
     };
     document.body.addEventListener("mousemove", onMouseMoveListener);
-    return () => document.body.removeEventListener("mousemove", onMouseMoveListener);
+    document.body.addEventListener("touchmove", onTouchMoveListener);
+    return () => {
+      document.body.removeEventListener("mousemove", onMouseMoveListener);
+      document.body.removeEventListener("touchmove", onTouchMoveListener);
+    };
   }, []);
 
   return (
