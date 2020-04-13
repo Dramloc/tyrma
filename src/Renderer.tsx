@@ -16,7 +16,7 @@ export const Renderer: React.FC<{ dungeon: Dungeon.Dungeon; zoom: number; dx: nu
   const height = dungeon.walls.height * 16;
 
   useEffect(() => {
-    instance.postMessage({ type: "SET_DY", payload: window.devicePixelRatio });
+    instance.postMessage({ type: "SET_DPR", payload: window.devicePixelRatio });
   }, []);
 
   useEffect(() => {

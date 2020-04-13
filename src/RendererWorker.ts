@@ -321,7 +321,7 @@ const textureCache: { [key: string]: ImageBitmap } = {};
 const render = (
   dungeon: Dungeon.Dungeon,
   ctx: OffscreenCanvasRenderingContext2D,
-  dpr: number,
+  devicePixelRatio: number,
   zoom: number,
   dx: number,
   dy: number
@@ -338,8 +338,8 @@ const render = (
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.save();
   ctx.imageSmoothingEnabled = false;
-  ctx.translate(dx * dpr, dy * dpr);
-  ctx.scale(dpr * zoom, dpr * zoom);
+  ctx.translate(dx * devicePixelRatio, dy * devicePixelRatio);
+  ctx.scale(devicePixelRatio * zoom, devicePixelRatio * zoom);
   const $renderCell = renderCell(tilesetTexture, ctx, dungeon);
   Grid.forEachWithCoordinates($renderCell, dungeon.walls);
   ctx.restore();
@@ -388,7 +388,7 @@ globalThis.addEventListener("message", (e) => {
       break;
     }
     case "SET_DPR": {
-      dy = action.payload;
+      dpr = action.payload;
       break;
     }
   }
