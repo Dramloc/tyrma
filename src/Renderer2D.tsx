@@ -46,27 +46,25 @@ const loadTexture = (path: string): Promise<HTMLImageElement> => {
   });
 };
 
-const getSlices = memoize((sliceName: string): Slice[] => {
+const getSlicesBounds = memoize((sliceName: string): SliceBounds[] => {
   const slices: Slice[] = tileset.meta.slices;
-  return slices.filter((slice) => {
-    return slice.name.split("_")[0] === sliceName;
-  });
+  return slices
+    .filter((slice) => {
+      return slice.name.split("_")[0] === sliceName;
+    })
+    .map((slice) => slice.keys[0])
+    .filter((key) => key !== undefined)
+    .map((key) => key.bounds);
 });
 
-const getBounds = memoize((sliceName: string, dx: number, dy: number): SliceBounds | null => {
+const getBounds = (sliceName: string, dx: number, dy: number): SliceBounds | null => {
   const random = Random.createGenerator(`${dx}.${dy}`);
-  const slices = getSlices(sliceName);
-  if (slices.length === 0) {
+  const slicesBounds = getSlicesBounds(sliceName);
+  if (slicesBounds.length === 0) {
     return null;
   }
-  const slice = slices[Math.floor(random() * slices.length)];
-  const key = slice.keys[0];
-  if (key === undefined) {
-    console.log(`${sliceName}.${0} not found.`);
-    return null;
-  }
-  return key.bounds;
-});
+  return slicesBounds[Math.floor(random() * slicesBounds.length)];
+};
 
 const drawImage = (
   texture: HTMLImageElement,
@@ -323,15 +321,18 @@ const renderCell = (tilesetTexture: HTMLImageElement, ctx: CanvasRenderingContex
   return renderCellWithContext;
 };
 
-const render = async (
-  dungeon: Dungeon.Dungeon,
-  ctx: CanvasRenderingContext2D,
-  zoom: number,
-  dx: number,
-  dy: number
-) => {
-  console.time("render");
-  const tilesetTexture = await loadTexture(tilesetImage);
+const textureCache: { [key: string]: HTMLImageElement } = {};
+
+const render = (dungeon: Dungeon.Dungeon, ctx: CanvasRenderingContext2D, zoom: number, dx: number, dy: number) => {
+  let tilesetTexture = null;
+  if (textureCache[tilesetImage] !== undefined) {
+    tilesetTexture = textureCache[tilesetImage];
+  } else {
+    loadTexture(tilesetImage).then((tilesetTexture) => {
+      textureCache[tilesetImage] = tilesetTexture;
+    });
+    return;
+  }
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.save();
   ctx.imageSmoothingEnabled = false;
@@ -340,7 +341,6 @@ const render = async (
   const $renderCell = renderCell(tilesetTexture, ctx, dungeon);
   Grid.forEachWithCoordinates($renderCell, dungeon.walls);
   ctx.restore();
-  console.timeEnd("render");
 };
 
 export const Renderer2D: React.FC<{ dungeon: Dungeon.Dungeon; zoom: number; dx: number; dy: number }> = ({
@@ -349,17 +349,49 @@ export const Renderer2D: React.FC<{ dungeon: Dungeon.Dungeon; zoom: number; dx: 
   dx,
   dy,
 }) => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const width = dungeon.walls.width * 16;
   const height = dungeon.walls.height * 16;
+
+  const dungeonRef = useRef(dungeon);
+  useEffect(() => {
+    dungeonRef.current = dungeon;
+  }, [dungeon]);
+
+  const zoomRef = useRef(zoom);
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  const dxRef = useRef(dx);
+  useEffect(() => {
+    dxRef.current = dx;
+  }, [dx]);
+
+  const dyRef = useRef(dy);
+  useEffect(() => {
+    dyRef.current = dy;
+  }, [dy]);
+
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   useEffect(() => {
     if (canvasRef.current !== null) {
       const ctx = canvasRef.current.getContext("2d");
-      if (ctx) {
-        render(dungeon, ctx, zoom, dx, dy);
-      }
+      contextRef.current = ctx;
     }
   }, [dungeon, dx, dy, zoom]);
+
+  useEffect(() => {
+    const animate = () => {
+      animationFrame = window.requestAnimationFrame(animate);
+      if (contextRef.current !== null) {
+        render(dungeonRef.current, contextRef.current, zoomRef.current, dxRef.current, dyRef.current);
+      }
+    };
+    let animationFrame = window.requestAnimationFrame(animate);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, []);
+
   return (
     <canvas
       ref={canvasRef}
