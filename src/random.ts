@@ -15,7 +15,7 @@ const xmur3 = (value: string): SeedGenerator => {
 };
 
 // https://github.com/bryc/code/blob/master/jshash/PRNGs.md#sfc32
-const sfc32 = (a: number, b: number, c: number, d: number): RandomNumberGenerator => {
+export const sfc32 = (a: number, b: number, c: number, d: number): RandomNumberGenerator => {
   return () => {
     a >>>= 0;
     b >>>= 0;

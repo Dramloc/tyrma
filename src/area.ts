@@ -14,10 +14,8 @@ export const randomPartition = ({ random, mu, sigma }: PartitionAreaOptions, are
   type Direction = typeof HORIZONTAL | typeof VERTICAL;
 
   const splitHorizontally = ({ x, y, width, height }: Area): [Area, Area] => {
-    const split = Random.clamp(
-      0,
-      width,
-      Random.unitPairToGaussianDistribution({ mu: mu * width, sigma }, random(), random())
+    const split = Math.floor(
+      Random.clamp(0, width, Random.unitPairToGaussianDistribution({ mu: mu * width, sigma }, random(), random()))
     );
     return [
       { x: x, y: y, width: split, height: height },
@@ -31,10 +29,8 @@ export const randomPartition = ({ random, mu, sigma }: PartitionAreaOptions, are
   };
 
   const splitVertically = ({ x, y, width, height }: Area): [Area, Area] => {
-    const split = Random.clamp(
-      0,
-      height,
-      Random.unitPairToGaussianDistribution({ mu: mu * height, sigma }, random(), random())
+    const split = Math.floor(
+      Random.clamp(0, height, Random.unitPairToGaussianDistribution({ mu: mu * height, sigma }, random(), random()))
     );
     return [
       { x: x, y: y, width: width, height: split },

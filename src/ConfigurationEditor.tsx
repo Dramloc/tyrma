@@ -72,9 +72,14 @@ const EditorWrapper = styled.div({
   fontFamily: ["Lucida Console", "Monaco", "monospace"].join(),
   fontSize: "0.75rem",
   lineHeight: 2,
-  backgroundColor: "#1e1e1e",
-  borderRadius: 5,
+  backgroundColor: "#2b2b45",
   padding: "0.5rem",
+  position: "fixed",
+  right: 0,
+  top: 0,
+  height: "100%",
+  width: 300,
+  boxShadow: "0 9px 27px -15px rgba(0, 0, 0, 0.4)",
 });
 
 const TokenString = styled.span({

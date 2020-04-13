@@ -1,0 +1,67 @@
+{ "frames": {
+   "dungeon-tileset.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 336, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 336, "h": 144 },
+    "sourceSize": { "w": 336, "h": 144 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.2.17-x64",
+  "image": "dungeon-tileset.png",
+  "format": "RGBA8888",
+  "size": { "w": 336, "h": 144 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "dungeon", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+   { "name": "floor_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 80, "y": 96, "w": 16, "h": 16 } }] },
+   { "name": "wall_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 64, "y": 16, "w": 16, "h": 16 } }] },
+   { "name": "wall_001", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 48, "y": 16, "w": 16, "h": 16 } }] },
+   { "name": "walltop-north_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 64, "y": 8, "w": 16, "h": 8 } }] },
+   { "name": "walltop-east_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 96, "y": 80, "w": 8, "h": 16 } }] },
+   { "name": "walltop-east_001", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 96, "y": 96, "w": 8, "h": 16 } }] },
+   { "name": "walltop-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 24, "y": 80, "w": 8, "h": 16 } }] },
+   { "name": "walltop-west_001", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 24, "y": 96, "w": 8, "h": 16 } }] },
+   { "name": "walltop-south_001", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 48, "y": 128, "w": 16, "h": 8 } }] },
+   { "name": "walltop-south_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 64, "y": 128, "w": 16, "h": 8 } }] },
+   { "name": "wallfull_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 0, "y": 0, "w": 16, "h": 16 } }] },
+   { "name": "walltop-north_001", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 48, "y": 8, "w": 16, "h": 8 } }] },
+   { "name": "walltopcornerout-north-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 136, "y": 8, "w": 8, "h": 8 } }] },
+   { "name": "walltop-north-north-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 144, "y": 8, "w": 8, "h": 8 } }] },
+   { "name": "walltop-north-north-east_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 168, "y": 8, "w": 8, "h": 8 } }] },
+   { "name": "walltopcornerout-north-east_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 176, "y": 8, "w": 8, "h": 8 } }] },
+   { "name": "walltopcornerout-south-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 136, "y": 48, "w": 8, "h": 8 } }] },
+   { "name": "walltopcornerout-south-east_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 176, "y": 48, "w": 8, "h": 8 } }] },
+   { "name": "walltop-north-west-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 136, "y": 16, "w": 8, "h": 8 } }] },
+   { "name": "walltop-south-west-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 136, "y": 40, "w": 8, "h": 8 } }] },
+   { "name": "walltop-south-south-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 144, "y": 48, "w": 8, "h": 8 } }] },
+   { "name": "walltop-south-south-east_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 168, "y": 48, "w": 8, "h": 8 } }] },
+   { "name": "walltop-south-east-east_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 176, "y": 40, "w": 8, "h": 8 } }] },
+   { "name": "walltop-north-east-east_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 176, "y": 16, "w": 8, "h": 8 } }] },
+   { "name": "wall-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 144, "y": 16, "w": 8, "h": 16 } }] },
+   { "name": "wall-east_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 168, "y": 16, "w": 8, "h": 16 } }] },
+   { "name": "walltopcornerin-north-east_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 160, "y": 72, "w": 8, "h": 8 } }] },
+   { "name": "walltopcornerin-south-east_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 160, "y": 112, "w": 8, "h": 8 } }] },
+   { "name": "walltopcornerin-south-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 136, "y": 112, "w": 8, "h": 8 } }] },
+   { "name": "walltopcornerin-north-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 136, "y": 72, "w": 8, "h": 8 } }] },
+   { "name": "floor_001", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 80, "y": 112, "w": 16, "h": 16 } }] },
+   { "name": "floor_002", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 32, "y": 96, "w": 16, "h": 16 } }] },
+   { "name": "floor_003", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 32, "y": 112, "w": 16, "h": 16 } }] },
+   { "name": "floor_004", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 48, "y": 96, "w": 16, "h": 16 } }] },
+   { "name": "floor_005", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 64, "y": 96, "w": 16, "h": 16 } }] },
+   { "name": "shadowout-north-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 192, "y": 0, "w": 16, "h": 16 } }] },
+   { "name": "shadow-north_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 208, "y": 0, "w": 16, "h": 16 } }] },
+   { "name": "shadow-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 192, "y": 16, "w": 16, "h": 16 } }] },
+   { "name": "shadowin-north-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 192, "y": 32, "w": 16, "h": 16 } }] },
+   { "name": "shadow-north-north-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 224, "y": 0, "w": 16, "h": 16 } }] },
+   { "name": "shadow-north-west-west_000", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 208, "y": 16, "w": 16, "h": 16 } }] }
+  ]
+ }
+}
