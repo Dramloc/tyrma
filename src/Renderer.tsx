@@ -42,7 +42,10 @@ export const Renderer: React.FC<{ dungeon: Dungeon.Dungeon; zoom: number; dx: nu
       return;
     }
     const offscreen = canvasRef.current.transferControlToOffscreen();
-    instance.postMessage({ type: "INIT", payload: offscreen }, [offscreen]);
+    instance.postMessage({ type: "SETUP", payload: offscreen }, [offscreen]);
+    return () => {
+      instance.postMessage({ type: "TEARDOWN" });
+    };
   }, []);
 
   return (

@@ -353,9 +353,10 @@ let dx = 0;
 let dy = 0;
 let zoom = 0;
 let dungeon: Dungeon.Dungeon | null = null;
+let animationFrame: number | null = null;
 
 const animate = () => {
-  requestAnimationFrame(animate);
+  animationFrame = requestAnimationFrame(animate);
   if (dungeon === null || ctx === null) {
     return;
   }
@@ -365,10 +366,16 @@ const animate = () => {
 globalThis.addEventListener("message", (e) => {
   const action = e.data;
   switch (action.type) {
-    case "INIT": {
+    case "SETUP": {
       canvas = action.payload as OffscreenCanvas;
       ctx = canvas.getContext("2d");
       animate();
+      break;
+    }
+    case "TEARDOWN": {
+      if (animationFrame !== null) {
+        cancelAnimationFrame(animationFrame);
+      }
       break;
     }
     case "SET_DUNGEON": {
