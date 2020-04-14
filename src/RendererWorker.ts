@@ -321,7 +321,6 @@ const textureCache: { [key: string]: ImageBitmap } = {};
 const render = (
   dungeon: Dungeon.Dungeon,
   ctx: OffscreenCanvasRenderingContext2D,
-  devicePixelRatio: number,
   zoom: number,
   dx: number,
   dy: number
@@ -338,8 +337,8 @@ const render = (
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.save();
   ctx.imageSmoothingEnabled = false;
-  ctx.translate(dx * devicePixelRatio, dy * devicePixelRatio);
-  ctx.scale(devicePixelRatio * zoom, devicePixelRatio * zoom);
+  ctx.translate(dx, dy);
+  ctx.scale(zoom, zoom);
   const $renderCell = renderCell(tilesetTexture, ctx, dungeon);
   Grid.forEachWithCoordinates($renderCell, dungeon.walls);
   ctx.restore();
@@ -348,7 +347,6 @@ const render = (
 let canvas: OffscreenCanvas | null = null;
 let ctx: OffscreenCanvasRenderingContext2D | null = null;
 
-let dpr = 1;
 let dx = 0;
 let dy = 0;
 let zoom = 0;
@@ -360,7 +358,7 @@ const animate = () => {
   if (dungeon === null || ctx === null) {
     return;
   }
-  render(dungeon, ctx, dpr, zoom, dx, dy);
+  render(dungeon, ctx, zoom, dx, dy);
 };
 
 globalThis.addEventListener("message", (e) => {
@@ -380,10 +378,6 @@ globalThis.addEventListener("message", (e) => {
     }
     case "SET_DUNGEON": {
       dungeon = action.payload as Dungeon.Dungeon;
-      if (canvas) {
-        canvas.width = dungeon.walls.width * 16 * dpr;
-        canvas.height = dungeon.walls.height * 16 * dpr;
-      }
       break;
     }
     case "SET_ZOOM": {
@@ -398,13 +392,12 @@ globalThis.addEventListener("message", (e) => {
       dy = action.payload;
       break;
     }
-    case "SET_DPR": {
-      dpr = action.payload;
-      if (canvas && dungeon) {
-        canvas.width = dungeon.walls.width * 16 * dpr;
-        canvas.height = dungeon.walls.height * 16 * dpr;
+    case "SET_SIZE": {
+      const { width, height } = action.payload;
+      if (canvas) {
+        canvas.width = width;
+        canvas.height = height;
       }
-      break;
     }
   }
 });

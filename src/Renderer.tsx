@@ -12,9 +12,6 @@ export const Renderer: React.FC<{ dungeon: Dungeon.Dungeon; zoom: number; dx: nu
   dx,
   dy,
 }) => {
-  const width = dungeon.walls.width * 16;
-  const height = dungeon.walls.height * 16;
-
   useEffect(() => {
     instance.postMessage({ type: "SET_DPR", payload: window.devicePixelRatio });
   }, []);
@@ -24,15 +21,15 @@ export const Renderer: React.FC<{ dungeon: Dungeon.Dungeon; zoom: number; dx: nu
   }, [dungeon]);
 
   useEffect(() => {
-    instance.postMessage({ type: "SET_ZOOM", payload: zoom });
+    instance.postMessage({ type: "SET_ZOOM", payload: zoom * window.devicePixelRatio });
   }, [zoom]);
 
   useEffect(() => {
-    instance.postMessage({ type: "SET_DX", payload: dx });
+    instance.postMessage({ type: "SET_DX", payload: dx * window.devicePixelRatio });
   }, [dx]);
 
   useEffect(() => {
-    instance.postMessage({ type: "SET_DY", payload: dy });
+    instance.postMessage({ type: "SET_DY", payload: dy * window.devicePixelRatio });
   }, [dy]);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -48,14 +45,22 @@ export const Renderer: React.FC<{ dungeon: Dungeon.Dungeon; zoom: number; dx: nu
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ width, height }}
+  useEffect(() => {
+    const resizeListener = () => {
+      if (!canvasRef.current) {
+        return;
+      }
       // Offscreen canvas size cannot be changed by the main thread once transfered
-      // This only sets the initial canvas size, subsequent updates are handle in the web worker
-      width={width * devicePixelRatio}
-      height={height * devicePixelRatio}
-    />
-  );
+      const { width, height } = canvasRef.current.getBoundingClientRect();
+      instance.postMessage({
+        type: "SET_SIZE",
+        payload: { width: width * devicePixelRatio, height: height * devicePixelRatio },
+      });
+    };
+    resizeListener();
+    window.addEventListener("resize", resizeListener);
+    return () => window.removeEventListener("resize", resizeListener);
+  }, []);
+
+  return <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />;
 };
