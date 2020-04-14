@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 // @ts-ignore
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import worker from "worker-loader!./RendererWorker";
@@ -6,12 +6,9 @@ import * as Dungeon from "./dungeon";
 
 const instance = worker();
 
-export const Renderer = forwardRef<
-  HTMLCanvasElement | null,
-  {
-    dungeon: Dungeon.Dungeon;
-  }
->(({ dungeon }, ref) => {
+export const Renderer: React.FC<{
+  dungeon: Dungeon.Dungeon;
+}> = ({ dungeon }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Zoom listener
@@ -153,4 +150,4 @@ export const Renderer = forwardRef<
   }, []);
 
   return <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />;
-});
+};
