@@ -149,11 +149,12 @@ export const App = () => {
             boxSizing: "border-box",
           },
           "#root": {
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
             height: "100vh",
-            paddingRight: 300,
+            width: "100vw",
+            paddingRight: 0,
+            "@media (min-width: 768px)": {
+              paddingRight: 300,
+            },
           },
         })}
       />

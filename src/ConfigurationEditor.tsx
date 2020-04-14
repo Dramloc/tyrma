@@ -68,7 +68,6 @@ export function getDefaultConfiguration<T>(specification: Specification<T>): T {
 }
 
 const EditorWrapper = styled.div({
-  display: "inline-block",
   fontFamily: ["Lucida Console", "Monaco", "monospace"].join(),
   fontSize: "0.75rem",
   lineHeight: 2,
@@ -80,6 +79,11 @@ const EditorWrapper = styled.div({
   height: "100%",
   width: 300,
   boxShadow: "0 9px 27px -15px rgba(0, 0, 0, 0.4)",
+
+  display: "none",
+  "@media (min-width: 768px)": {
+    display: "block",
+  },
 });
 
 const TokenString = styled.span({
