@@ -380,6 +380,10 @@ globalThis.addEventListener("message", (e) => {
     }
     case "SET_DUNGEON": {
       dungeon = action.payload as Dungeon.Dungeon;
+      if (canvas) {
+        canvas.width = dungeon.walls.width * 16 * dpr;
+        canvas.height = dungeon.walls.height * 16 * dpr;
+      }
       break;
     }
     case "SET_ZOOM": {
@@ -396,6 +400,10 @@ globalThis.addEventListener("message", (e) => {
     }
     case "SET_DPR": {
       dpr = action.payload;
+      if (canvas && dungeon) {
+        canvas.width = dungeon.walls.width * 16 * dpr;
+        canvas.height = dungeon.walls.height * 16 * dpr;
+      }
       break;
     }
   }

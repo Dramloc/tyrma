@@ -52,6 +52,8 @@ export const Renderer: React.FC<{ dungeon: Dungeon.Dungeon; zoom: number; dx: nu
     <canvas
       ref={canvasRef}
       style={{ width, height }}
+      // Offscreen canvas size cannot be changed by the main thread once transfered
+      // This only sets the initial canvas size, subsequent updates are handle in the web worker
       width={width * devicePixelRatio}
       height={height * devicePixelRatio}
     />
