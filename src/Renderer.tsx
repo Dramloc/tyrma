@@ -30,7 +30,7 @@ export const Renderer = forwardRef<
     };
     canvas.addEventListener("wheel", listener);
     return () => canvas.removeEventListener("wheel", listener);
-  });
+  }, []);
 
   // Panning listeners
   const [dx, setDx] = useState(0);
@@ -133,7 +133,7 @@ export const Renderer = forwardRef<
     return () => {
       instance.postMessage({ type: "TEARDOWN" });
     };
-  }, [canvasRef]);
+  }, []);
 
   useEffect(() => {
     const resizeListener = () => {
@@ -150,7 +150,7 @@ export const Renderer = forwardRef<
     resizeListener();
     window.addEventListener("resize", resizeListener);
     return () => window.removeEventListener("resize", resizeListener);
-  }, [canvasRef]);
+  }, []);
 
   return <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />;
 });
