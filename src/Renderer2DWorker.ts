@@ -316,22 +316,27 @@ const renderCell = (tilesetTexture: ImageBitmap, ctx: OffscreenCanvasRenderingCo
   return renderCellWithContext;
 };
 
-const textureCache: { [key: string]: ImageBitmap } = {};
+const textureCache: { [key: string]: ImageBitmap | null } = {};
 
 const render = (
-  dungeon: Dungeon.Dungeon,
   ctx: OffscreenCanvasRenderingContext2D,
-  zoom: number,
+  dungeon: Dungeon.Dungeon,
   dx: number,
-  dy: number
+  dy: number,
+  zoom: number
 ) => {
-  let tilesetTexture = null;
-  if (textureCache[tilesetImage] !== undefined) {
-    tilesetTexture = textureCache[tilesetImage];
-  } else {
+  let tilesetTexture = textureCache[tilesetImage];
+  if (tilesetTexture === undefined) {
+    // Set indicator that texture is being loaded
+    textureCache[tilesetImage] = null;
+    // Load texture and early exit
     loadTexture(tilesetImage).then((tilesetTexture) => {
       textureCache[tilesetImage] = tilesetTexture;
     });
+    return;
+  }
+  if (tilesetTexture === null) {
+    // Texture is being loaded
     return;
   }
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -353,12 +358,12 @@ let zoom = 0;
 let dungeon: Dungeon.Dungeon | null = null;
 let animationFrame: number | null = null;
 
-const animate = () => {
-  animationFrame = requestAnimationFrame(animate);
-  if (dungeon === null || ctx === null) {
-    return;
-  }
-  render(dungeon, ctx, zoom, dx, dy);
+const startAnimate = (ctx: OffscreenCanvasRenderingContext2D, dungeon: Dungeon.Dungeon) => {
+  const animate = () => {
+    animationFrame = requestAnimationFrame(animate);
+    render(ctx, dungeon, dx, dy, zoom);
+  };
+  animate();
 };
 
 globalThis.addEventListener("message", (e) => {
@@ -367,7 +372,10 @@ globalThis.addEventListener("message", (e) => {
     case "SETUP": {
       canvas = action.payload as OffscreenCanvas;
       ctx = canvas.getContext("2d");
-      animate();
+      if (dungeon === null || ctx === null) {
+        return;
+      }
+      startAnimate(ctx, dungeon);
       break;
     }
     case "TEARDOWN": {

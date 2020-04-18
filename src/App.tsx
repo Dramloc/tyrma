@@ -2,7 +2,7 @@ import { css, Global } from "@emotion/core";
 import React, { useMemo, useState } from "react";
 import { ConfigurationEditor, getDefaultConfiguration, Specification } from "./ConfigurationEditor";
 import * as Dungeon from "./dungeon";
-import { Renderer } from "./Renderer";
+import { Renderer2D, RendererWebGL } from "./Renderer";
 
 const configurationSpecification: Specification<Dungeon.DungeonOptions> = {
   seed: {
@@ -66,7 +66,8 @@ export const App = () => {
 
   return (
     <>
-      <Renderer dungeon={dungeon} />
+      <Renderer2D dungeon={dungeon} />
+      <RendererWebGL dungeon={dungeon} />
       <Global
         styles={css({
           body: {
