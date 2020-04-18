@@ -1,12 +1,12 @@
 import * as Dungeon from "./dungeon";
-import { clear, createBuffer, createProgram, createShader, getAttributeLocation } from "./gl";
+import { clear, createBuffer, createProgram, createShader, getAttributeLocation, createVertexArray } from "./gl";
 import * as Grid from "./grid";
 
 const glsl = String.raw;
 
 const initialize = (gl: WebGL2RenderingContext) => {
-  const vertexShaderSource = glsl`
-    attribute vec2 a_position;
+  const vertexShaderSource = glsl`#version 300 es
+    in vec2 a_position;
     uniform vec2 u_resolution;
     uniform vec2 u_delta;
     uniform float u_scale;
@@ -21,11 +21,14 @@ const initialize = (gl: WebGL2RenderingContext) => {
   `;
   const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
 
-  const fragmentShaderSource = glsl`
+  const fragmentShaderSource = glsl`#version 300 es
     precision mediump float;
 
+    out vec4 out_color;
+    uniform vec4 u_color;
+
     void main() {
-      gl_FragColor = vec4(0.16862745098039217, 0.16862745098039217, 0.27058823529411763, 1);
+      out_color = u_color;
     }
   `;
   const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
@@ -45,6 +48,7 @@ export const render = (
   const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution");
   const deltaUniformLocation = gl.getUniformLocation(program, "u_delta");
   const scaleUniformLocation = gl.getUniformLocation(program, "u_scale");
+  const colorUniformLocation = gl.getUniformLocation(program, "u_color");
 
   // Push position data in the buffer
   const positionBuffer = createBuffer(gl);
@@ -58,19 +62,21 @@ export const render = (
   }, dungeon.walls);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
+  const positionVao = createVertexArray(gl);
+  gl.bindVertexArray(positionVao);
+  gl.enableVertexAttribArray(positionAttributeLocation);
+  gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
   // Render
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   clear(gl);
-  gl.useProgram(program);
 
+  gl.useProgram(program);
   gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
   gl.uniform2f(deltaUniformLocation, dx, dy);
   gl.uniform1f(scaleUniformLocation, zoom);
-
-  gl.enableVertexAttribArray(positionAttributeLocation);
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-
+  gl.uniform4f(colorUniformLocation, 0.16862745098039217, 0.16862745098039217, 0.27058823529411763, 1);
+  gl.bindVertexArray(positionVao);
   gl.drawArrays(gl.TRIANGLES, 0, positions.length);
 };
 

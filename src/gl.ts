@@ -54,6 +54,15 @@ export const createBuffer = (gl: WebGL2RenderingContext): WebGLBuffer => {
   return buffer;
 };
 
+export const createVertexArray = (gl: WebGL2RenderingContext): WebGLVertexArrayObject => {
+  const vertexArray = gl.createVertexArray();
+  if (vertexArray === null) {
+    gl.deleteBuffer(vertexArray);
+    invariant(false, "Failed to create vertex array.");
+  }
+  return vertexArray;
+};
+
 export const clear = (gl: WebGL2RenderingContext): void => {
   gl.clearColor(0, 0, 0, 0);
   gl.clear(gl.COLOR_BUFFER_BIT);
