@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import styled from "@emotion/styled";
+import styled from "./ui/styled";
 
 type TextFieldSpecification = {
   type: "text";
@@ -67,24 +67,26 @@ export function getDefaultConfiguration<T>(specification: Specification<T>): T {
   );
 }
 
-const EditorWrapper = styled.div({
-  fontFamily: ["Lucida Console", "Monaco", "monospace"].join(),
-  fontSize: "0.75rem",
-  lineHeight: 2,
-  backgroundColor: "#2b2b45",
-  padding: "0.5rem",
+const EditorWrapper = styled.div(({ theme }) => ({
   position: "fixed",
+  display: "none",
   right: 0,
   top: 0,
   height: "100%",
   width: 300,
-  boxShadow: "0 9px 27px -15px rgba(0, 0, 0, 0.4)",
+  padding: theme.spacing[2],
 
-  display: "none",
-  "@media (min-width: 768px)": {
+  backgroundColor: "#2b2b45",
+  boxShadow: theme.boxShadow.lg,
+
+  fontFamily: theme.fontFamily.mono,
+  fontSize: theme.fontSize.xs,
+  lineHeight: theme.lineHeight.loose,
+
+  [`@media (min-width: ${theme.breakpoints.sm})`]: {
     display: "block",
   },
-});
+}));
 
 const TokenString = styled.span({
   color: "#9cdcfe",
@@ -94,27 +96,38 @@ const TokenPunctuation = styled.span({
   color: "#f8f8f2",
 });
 
-const Indented = styled.div({
-  paddingLeft: "1rem",
-});
+const Indented = styled.div(({ theme }) => ({
+  paddingLeft: theme.spacing[4],
+}));
 
-const FieldWrapper = styled.label<{ as: React.ElementType }>({
+const FieldWrapper = styled.label<{ as: React.ElementType }>(({ theme }) => ({
   display: "block",
-});
+  marginBottom: theme.spacing[1],
+  "&:last-child": {
+    marginBottom: 0,
+  },
+}));
 
-const FieldInput = styled.input({
-  color: "#b5cea8",
-  backgroundColor: "rgba(0, 0, 0, 0.1)",
-  padding: "0.25rem 0.5rem",
-  border: 0,
-  fontFamily: "inherit",
-  fontSize: "inherit",
-  borderRadius: 5,
+const FieldInput = styled.input(({ theme }) => ({
   minWidth: "auto",
   width: "auto",
-  transitionTimingFunction: "cubic-bezier(0.4, 0.0, 0.2, 1)",
-  transitionDuration: "175ms",
-  transitionProperty: ["box-shadow", "background-color"].join(),
+  paddingTop: theme.spacing[1],
+  paddingRight: theme.spacing[2],
+  paddingBottom: theme.spacing[1],
+  paddingLeft: theme.spacing[2],
+
+  backgroundColor: "rgba(0, 0, 0, 0.1)",
+  border: "none",
+  borderRadius: 5,
+
+  fontSize: theme.fontSize.xs,
+  lineHeight: theme.lineHeight.none,
+  color: "#b5cea8",
+
+  transitionProperty: theme.transitionProperty.default,
+  transitionDuration: theme.transitionDuration[150],
+  transitionTimingFunction: theme.transitionTimingFunction["in-out"],
+
   "&:hover": {
     backgroundColor: "rgba(0, 167, 255, 0.05)",
     boxShadow: "0 0 0 2px rgba(0, 167, 255, 0.15)",
@@ -124,7 +137,7 @@ const FieldInput = styled.input({
     backgroundColor: "rgba(0, 167, 255, 0.1)",
     boxShadow: "0 0 0 2px rgba(0, 167, 255, 0.25)",
   },
-});
+}));
 
 export type ConfigurationEditorProps<T> = {
   value: T;

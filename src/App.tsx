@@ -1,8 +1,14 @@
 import { css, Global } from "@emotion/core";
-import React, { useMemo, useState } from "react";
+import { ThemeProvider } from "emotion-theming";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { ConfigurationEditor, getDefaultConfiguration, Specification } from "./ConfigurationEditor";
 import * as Dungeon from "./dungeon";
 import { Renderer2D, RendererWebGL } from "./Renderer";
+import { Button } from "./ui/Button";
+import { CSSReset } from "./ui/CSSReset";
+import styled from "./ui/styled";
+import { theme } from "./ui/theme";
+import { useViewport } from "./useViewport";
 
 const configurationSpecification: Specification<Dungeon.DungeonOptions> = {
   seed: {
@@ -57,6 +63,22 @@ const configurationSpecification: Specification<Dungeon.DungeonOptions> = {
   },
 };
 
+const RenderersContainer = styled.div({
+  position: "absolute",
+  width: "100%",
+  height: "100%",
+});
+
+const RendererContainer = styled.div<{ isVisible: boolean }>(({ theme, isVisible }) => ({
+  position: "absolute",
+  width: "100%",
+  height: "100%",
+  opacity: isVisible ? 1 : 0,
+  transitionProperty: theme.transitionProperty.opacity,
+  transitionDuration: theme.transitionDuration[300],
+  transitionTimingFunction: theme.transitionTimingFunction["in-out"],
+}));
+
 export const App = () => {
   const [configuration, setConfiguration] = useState<Dungeon.DungeonOptions>(() =>
     getDefaultConfiguration(configurationSpecification)
@@ -64,34 +86,47 @@ export const App = () => {
 
   const dungeon = useMemo(() => Dungeon.generate(configuration), [configuration]);
 
+  const [render2D, setRender2D] = useState(true);
+  const toggleRendering = useCallback(() => setRender2D((render2D) => !render2D), []);
+
+  // Listen for panning and zoom on the canvas
+  const rendererRef = useRef<HTMLDivElement | null>(null);
+  const { zoom, dx, dy } = useViewport(rendererRef);
+
   return (
-    <>
-      <Renderer2D dungeon={dungeon} />
-      <RendererWebGL dungeon={dungeon} />
+    <ThemeProvider theme={theme}>
+      <CSSReset />
       <Global
         styles={css({
           body: {
-            margin: 0,
             background: "#14182e",
-          },
-          "*, *::after, *::before": {
-            boxSizing: "border-box",
           },
           "#root": {
             height: "100vh",
             width: "100vw",
             paddingRight: 0,
-            "@media (min-width: 768px)": {
+            [`@media (min-width: ${theme.breakpoints.sm})`]: {
               paddingRight: 300,
             },
           },
         })}
       />
+      <RenderersContainer ref={rendererRef}>
+        <RendererContainer isVisible={render2D}>
+          <Renderer2D dungeon={dungeon} dx={dx} dy={dy} zoom={zoom} />
+        </RendererContainer>
+        <RendererContainer isVisible={!render2D}>
+          <RendererWebGL dungeon={dungeon} dx={dx} dy={dy} zoom={zoom} />
+        </RendererContainer>
+      </RenderersContainer>
+      <Button style={{ position: "fixed", left: "1rem", bottom: "1rem" }} onClick={toggleRendering}>
+        Toggle rendering
+      </Button>
       <ConfigurationEditor<Dungeon.DungeonOptions>
         value={configuration}
         specification={configurationSpecification}
         onChange={setConfiguration}
       />
-    </>
+    </ThemeProvider>
   );
 };
