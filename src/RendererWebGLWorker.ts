@@ -71,7 +71,7 @@ export const render = (
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
-  gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3);
+  gl.drawArrays(gl.TRIANGLES, 0, positions.length);
 };
 
 let canvas: OffscreenCanvas | null = null;
