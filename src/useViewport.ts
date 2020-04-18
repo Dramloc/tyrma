@@ -23,6 +23,7 @@ export const useViewport = <T extends HTMLElement>(ref: React.RefObject<T | null
 
   const onMouseWheel = useCallback(
     (e: WheelEvent) => {
+      e.preventDefault();
       const deltaZoom = e.deltaY < 0 ? +1 : -1;
       const nextZoom = Math.max(1, zoom + deltaZoom);
       if (nextZoom === zoom) {
