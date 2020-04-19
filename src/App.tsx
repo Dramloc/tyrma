@@ -1,9 +1,15 @@
 import { css, Global } from "@emotion/core";
 import { ThemeProvider } from "emotion-theming";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
+// @ts-ignore
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import GeneratorWorker from "worker-loader!./generation/GeneratorWorker";
+// @ts-ignore
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import RendererWebGLWorker from "worker-loader!./rendering/RendererWebGLWorker";
 import { ConfigurationEditor, getDefaultConfiguration, Specification } from "./generation/ConfigurationEditor";
 import * as Dungeon from "./generation/dungeon";
-import { createRendererWorker, Renderer } from "./rendering/Renderer";
+import { Renderer } from "./rendering/Renderer";
 import { CSSReset } from "./ui/CSSReset";
 import { theme } from "./ui/theme";
 import { createDispatch } from "./utils/createDispatch";
@@ -61,16 +67,20 @@ const configurationSpecification: Specification<Dungeon.DungeonOptions> = {
   },
 };
 
-const rendererWorker = createRendererWorker();
+const generatorWorker = GeneratorWorker();
+const generatorDispatch = createDispatch(generatorWorker);
+const rendererWorker = RendererWebGLWorker();
 const rendererDispatch = createDispatch(rendererWorker);
+const channel = new MessageChannel();
+rendererDispatch({ type: "SET_PORT", payload: channel.port1 }, [channel.port1]);
+generatorDispatch({ type: "SET_PORT", payload: channel.port2 }, [channel.port2]);
 
 export const App = () => {
   const [configuration, setConfiguration] = useState<Dungeon.DungeonOptions>(() =>
     getDefaultConfiguration(configurationSpecification)
   );
 
-  const dungeon = useMemo(() => Dungeon.generate(configuration), [configuration]);
-  useEffect(() => rendererDispatch({ type: "SET_DUNGEON", payload: dungeon }), [dungeon]);
+  useEffect(() => generatorDispatch({ type: "SET_CONFIGURATION", payload: configuration }), [configuration]);
 
   return (
     <ThemeProvider theme={theme}>

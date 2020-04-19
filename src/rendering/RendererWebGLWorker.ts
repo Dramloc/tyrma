@@ -132,7 +132,6 @@ const startAnimate = async (canvas: OffscreenCanvas | null, dungeon: Dungeon.Dun
   console.timeEnd("renderInit");
 
   const animate = () => {
-    console.time("render");
     animationFrame = requestAnimationFrame(animate);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     gl.clearColor(0, 0, 0, 0);
@@ -146,13 +145,12 @@ const startAnimate = async (canvas: OffscreenCanvas | null, dungeon: Dungeon.Dun
     gl.uniform2f(deltaUniformLocation, dx, dy);
     gl.uniform1f(scaleUniformLocation, zoom);
     gl.drawArrays(gl.TRIANGLES, 0, positions.length);
-    console.timeEnd("render");
   };
 
   animate();
 };
 
-globalThis.addEventListener("message", (e) => {
+const listener = (e: MessageEvent) => {
   const action = e.data;
   switch (action.type) {
     case "SETUP": {
@@ -164,6 +162,12 @@ globalThis.addEventListener("message", (e) => {
       if (animationFrame !== null) {
         cancelAnimationFrame(animationFrame);
       }
+      break;
+    }
+    case "SET_PORT": {
+      const port = action.payload as MessagePort;
+      port.addEventListener("message", listener);
+      port.start();
       break;
     }
     case "SET_DUNGEON": {
@@ -185,4 +189,5 @@ globalThis.addEventListener("message", (e) => {
       }
     }
   }
-});
+};
+globalThis.addEventListener("message", listener);

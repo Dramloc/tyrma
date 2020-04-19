@@ -1,13 +1,6 @@
 import React, { useCallback, useEffect, useRef } from "react";
-// @ts-ignore
-// eslint-disable-next-line import/no-webpack-loader-syntax
-import RendererWebGLWorker from "worker-loader!./RendererWebGLWorker";
 import { Dispatch } from "../utils/createDispatch";
 import { useViewportListener } from "../utils/useViewportListener";
-
-export const createRendererWorker = (): Worker => {
-  return RendererWebGLWorker();
-};
 
 export const Renderer: React.FC<{ dispatch: Dispatch }> = ({ dispatch }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
