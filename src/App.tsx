@@ -1,14 +1,12 @@
 import { css, Global } from "@emotion/core";
 import { ThemeProvider } from "emotion-theming";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ConfigurationEditor, getDefaultConfiguration, Specification } from "./generation/ConfigurationEditor";
 import * as Dungeon from "./generation/dungeon";
 import { createRendererWorker, Renderer } from "./rendering/Renderer";
 import { CSSReset } from "./ui/CSSReset";
-import styled from "./ui/styled";
 import { theme } from "./ui/theme";
 import { createDispatch } from "./utils/createDispatch";
-import { useViewportListener } from "./utils/useViewportListener";
 
 const configurationSpecification: Specification<Dungeon.DungeonOptions> = {
   seed: {
@@ -63,11 +61,6 @@ const configurationSpecification: Specification<Dungeon.DungeonOptions> = {
   },
 };
 
-const RendererContainer = styled.div({
-  width: "100%",
-  height: "100%",
-});
-
 const rendererWorker = createRendererWorker();
 const rendererDispatch = createDispatch(rendererWorker);
 
@@ -78,20 +71,6 @@ export const App = () => {
 
   const dungeon = useMemo(() => Dungeon.generate(configuration), [configuration]);
   useEffect(() => rendererDispatch({ type: "SET_DUNGEON", payload: dungeon }), [dungeon]);
-
-  // Listen for panning and zoom on the canvas
-  const rendererRef = useRef<HTMLDivElement | null>(null);
-  const onViewportChange = useCallback((dx, dy, zoom) => {
-    rendererDispatch({
-      type: "SET_VIEWPORT",
-      payload: {
-        dx: dx * window.devicePixelRatio,
-        dy: dy * window.devicePixelRatio,
-        zoom: zoom * window.devicePixelRatio,
-      },
-    });
-  }, []);
-  useViewportListener(rendererRef, onViewportChange);
 
   return (
     <ThemeProvider theme={theme}>
@@ -112,9 +91,7 @@ export const App = () => {
           },
         })}
       />
-      <RendererContainer ref={rendererRef}>
-        <Renderer dispatch={rendererDispatch} />
-      </RendererContainer>
+      <Renderer dispatch={rendererDispatch} />
       <ConfigurationEditor<Dungeon.DungeonOptions>
         value={configuration}
         specification={configurationSpecification}

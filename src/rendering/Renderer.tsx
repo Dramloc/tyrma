@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 // @ts-ignore
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import RendererWebGLWorker from "worker-loader!./RendererWebGLWorker";
 import { Dispatch } from "../utils/createDispatch";
+import { useViewportListener } from "../utils/useViewportListener";
 
 export const createRendererWorker = (): Worker => {
   return RendererWebGLWorker();
@@ -22,6 +23,22 @@ export const Renderer: React.FC<{ dispatch: Dispatch }> = ({ dispatch }) => {
       dispatch({ type: "TEARDOWN" });
     };
   }, [dispatch]);
+
+  // Listen to panning and zoom on canvas
+  const onViewportChange = useCallback(
+    (dx, dy, zoom) => {
+      dispatch({
+        type: "SET_VIEWPORT",
+        payload: {
+          dx: dx * window.devicePixelRatio,
+          dy: dy * window.devicePixelRatio,
+          zoom: zoom * window.devicePixelRatio,
+        },
+      });
+    },
+    [dispatch]
+  );
+  useViewportListener(canvasRef, onViewportChange);
 
   // Canvas resize listener
   useEffect(() => {
