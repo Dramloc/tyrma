@@ -2,30 +2,14 @@ import React, { useEffect, useRef } from "react";
 // @ts-ignore
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import RendererWebGLWorker from "worker-loader!./RendererWebGLWorker";
-import * as Dungeon from "../generation/dungeon";
+import { Dispatch } from "../utils/createDispatch";
 
-export const Renderer: React.FC<
-  RendererProps & {
-    dispatch: Dispatch;
-  }
-> = ({ dungeon, dispatch, dx, dy, zoom }) => {
-  // Set the rendered dungeon
-  useEffect(() => dispatch({ type: "SET_DUNGEON", payload: dungeon }), [dispatch, dungeon]);
+export const createRendererWorker = (): Worker => {
+  return RendererWebGLWorker();
+};
 
+export const Renderer: React.FC<{ dispatch: Dispatch }> = ({ dispatch }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  useEffect(
-    () =>
-      dispatch({
-        type: "SET_VIEWPORT",
-        payload: {
-          dx: dx * window.devicePixelRatio,
-          dy: dy * window.devicePixelRatio,
-          zoom: zoom * window.devicePixelRatio,
-        },
-      }),
-    [dispatch, dx, dy, zoom]
-  );
 
   // Worker initialization
   useEffect(() => {
@@ -46,7 +30,7 @@ export const Renderer: React.FC<
         return;
       }
       // Offscreen canvas size cannot be changed by the main thread once transfered
-      const { width, height } = canvasRef.current.getBoundingClientRect();
+      const { offsetWidth: width, offsetHeight: height } = canvasRef.current;
       dispatch({
         type: "SET_SIZE",
         payload: { width: width * devicePixelRatio, height: height * devicePixelRatio },
@@ -58,26 +42,4 @@ export const Renderer: React.FC<
   }, [dispatch]);
 
   return <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />;
-};
-
-type Dispatch = (action: { type: string; payload?: any }, transfer?: Transferable[]) => void;
-
-const createDispatch = (worker: Worker): Dispatch => {
-  const dispatch = (action: { type: string; payload?: any }, transfer: Transferable[] = []) => {
-    worker.postMessage(action, transfer);
-  };
-  return dispatch;
-};
-
-type RendererProps = {
-  dungeon: Dungeon.Dungeon;
-  dx: number;
-  dy: number;
-  zoom: number;
-};
-
-const rendererWebGL: Worker = RendererWebGLWorker();
-const dispatchWebGL = createDispatch(rendererWebGL);
-export const RendererWebGL: React.FC<RendererProps> = (props) => {
-  return <Renderer dispatch={dispatchWebGL} {...props} />;
 };

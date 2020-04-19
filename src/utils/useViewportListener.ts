@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 const useEventListener = <T extends HTMLElement, K extends keyof HTMLElementEventMap>(
   type: K,
@@ -16,28 +16,37 @@ const useEventListener = <T extends HTMLElement, K extends keyof HTMLElementEven
   }, [type, listener, options, ref]);
 };
 
-export const useViewport = <T extends HTMLElement>(ref: React.RefObject<T | null>) => {
-  const [zoom, setZoom] = useState(1);
-  const [dx, setDx] = useState(0);
-  const [dy, setDy] = useState(0);
+export const useViewportListener = <T extends HTMLElement>(
+  ref: React.RefObject<T | null>,
+  onChange: (dx: number, dy: number, zoom: number) => void
+) => {
+  const zoom = useRef(1);
+  const dx = useRef(0);
+  const dy = useRef(0);
+
+  useEffect(() => {
+    onChange(dx.current, dy.current, zoom.current);
+  }, [onChange]);
 
   const onMouseWheel = useCallback(
     (e: WheelEvent) => {
       e.preventDefault();
       const deltaZoom = e.deltaY < 0 ? +1 : -1;
-      const nextZoom = Math.max(1, zoom + deltaZoom);
-      if (nextZoom === zoom) {
+      const nextZoom = Math.max(1, zoom.current + deltaZoom);
+      if (nextZoom === zoom.current) {
         return;
       }
       const mouseX = e.offsetX;
       const mouseY = e.offsetY;
-      const nextDx = mouseX - (mouseX - dx) * (nextZoom / zoom);
-      const nextDy = mouseY - (mouseY - dy) * (nextZoom / zoom);
-      setZoom(nextZoom);
-      setDx(Math.floor(nextDx));
-      setDy(Math.floor(nextDy));
+      const nextDx = mouseX - (mouseX - dx.current) * (nextZoom / zoom.current);
+      const nextDy = mouseY - (mouseY - dy.current) * (nextZoom / zoom.current);
+
+      dx.current = Math.floor(nextDx);
+      dy.current = Math.floor(nextDy);
+      zoom.current = nextZoom;
+      onChange(dx.current, dy.current, zoom.current);
     },
-    [dx, dy, zoom]
+    [onChange]
   );
   useEventListener("wheel", onMouseWheel, ref);
 
@@ -45,7 +54,7 @@ export const useViewport = <T extends HTMLElement>(ref: React.RefObject<T | null
   // Handle panning start
   const onPanningStart = useCallback(
     (e: { clientX: number; clientY: number }) => {
-      start.current = { x: e.clientX - dx, y: e.clientY - dy };
+      start.current = { x: e.clientX - dx.current, y: e.clientY - dy.current };
       const element = ref.current;
       if (element !== null) {
         element.style.cursor = "move";
@@ -76,13 +85,17 @@ export const useViewport = <T extends HTMLElement>(ref: React.RefObject<T | null
   useEventListener("touchcancel", onPanningEnd, ref);
 
   // Handle element panning
-  const onPanningMove = useCallback((e: { clientX: number; clientY: number }) => {
-    if (start.current === null) {
-      return;
-    }
-    setDx(e.clientX - start.current.x);
-    setDy(e.clientY - start.current.y);
-  }, []);
+  const onPanningMove = useCallback(
+    (e: { clientX: number; clientY: number }) => {
+      if (start.current === null) {
+        return;
+      }
+      dx.current = e.clientX - start.current.x;
+      dy.current = e.clientY - start.current.y;
+      onChange(dx.current, dy.current, zoom.current);
+    },
+    [onChange]
+  );
   const onTouchPanning = useCallback(
     (e: TouchEvent) => {
       onPanningMove(e.touches[0]);
@@ -91,10 +104,4 @@ export const useViewport = <T extends HTMLElement>(ref: React.RefObject<T | null
   );
   useEventListener("mousemove", onPanningMove, ref);
   useEventListener("touchmove", onTouchPanning, ref);
-
-  return {
-    zoom,
-    dx,
-    dy,
-  };
 };

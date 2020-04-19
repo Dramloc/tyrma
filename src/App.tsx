@@ -1,13 +1,14 @@
 import { css, Global } from "@emotion/core";
 import { ThemeProvider } from "emotion-theming";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ConfigurationEditor, getDefaultConfiguration, Specification } from "./generation/ConfigurationEditor";
 import * as Dungeon from "./generation/dungeon";
-import { RendererWebGL } from "./rendering/Renderer";
+import { createRendererWorker, Renderer } from "./rendering/Renderer";
 import { CSSReset } from "./ui/CSSReset";
 import styled from "./ui/styled";
 import { theme } from "./ui/theme";
-import { useViewport } from "./utils/useViewport";
+import { createDispatch } from "./utils/createDispatch";
+import { useViewportListener } from "./utils/useViewportListener";
 
 const configurationSpecification: Specification<Dungeon.DungeonOptions> = {
   seed: {
@@ -63,10 +64,12 @@ const configurationSpecification: Specification<Dungeon.DungeonOptions> = {
 };
 
 const RendererContainer = styled.div({
-  position: "absolute",
   width: "100%",
   height: "100%",
 });
+
+const rendererWorker = createRendererWorker();
+const rendererDispatch = createDispatch(rendererWorker);
 
 export const App = () => {
   const [configuration, setConfiguration] = useState<Dungeon.DungeonOptions>(() =>
@@ -74,10 +77,21 @@ export const App = () => {
   );
 
   const dungeon = useMemo(() => Dungeon.generate(configuration), [configuration]);
+  useEffect(() => rendererDispatch({ type: "SET_DUNGEON", payload: dungeon }), [dungeon]);
 
   // Listen for panning and zoom on the canvas
   const rendererRef = useRef<HTMLDivElement | null>(null);
-  const { zoom, dx, dy } = useViewport(rendererRef);
+  const onViewportChange = useCallback((dx, dy, zoom) => {
+    rendererDispatch({
+      type: "SET_VIEWPORT",
+      payload: {
+        dx: dx * window.devicePixelRatio,
+        dy: dy * window.devicePixelRatio,
+        zoom: zoom * window.devicePixelRatio,
+      },
+    });
+  }, []);
+  useViewportListener(rendererRef, onViewportChange);
 
   return (
     <ThemeProvider theme={theme}>
@@ -88,6 +102,7 @@ export const App = () => {
             background: "#14182e",
           },
           "#root": {
+            position: "relative",
             height: "100vh",
             width: "100vw",
             paddingRight: 0,
@@ -98,7 +113,7 @@ export const App = () => {
         })}
       />
       <RendererContainer ref={rendererRef}>
-        <RendererWebGL dungeon={dungeon} dx={dx} dy={dy} zoom={zoom} />
+        <Renderer dispatch={rendererDispatch} />
       </RendererContainer>
       <ConfigurationEditor<Dungeon.DungeonOptions>
         value={configuration}
