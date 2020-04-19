@@ -1,9 +1,6 @@
 import React, { useEffect, useRef } from "react";
 // @ts-ignore
 // eslint-disable-next-line import/no-webpack-loader-syntax
-import Renderer2DWorker from "worker-loader!./Renderer2DWorker";
-// @ts-ignore
-// eslint-disable-next-line import/no-webpack-loader-syntax
 import RendererWebGLWorker from "worker-loader!./RendererWebGLWorker";
 import * as Dungeon from "../generation/dungeon";
 
@@ -77,12 +74,6 @@ type RendererProps = {
   dx: number;
   dy: number;
   zoom: number;
-};
-
-const renderer2D: Worker = Renderer2DWorker();
-const dispatch2D = createDispatch(renderer2D);
-export const Renderer2D: React.FC<RendererProps> = (props) => {
-  return <Renderer dispatch={dispatch2D} {...props} />;
 };
 
 const rendererWebGL: Worker = RendererWebGLWorker();
