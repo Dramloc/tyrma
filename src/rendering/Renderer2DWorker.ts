@@ -83,16 +83,10 @@ globalThis.addEventListener("message", (e) => {
       dungeon = action.payload as Dungeon.Dungeon;
       break;
     }
-    case "SET_ZOOM": {
-      zoom = action.payload;
-      break;
-    }
-    case "SET_DX": {
-      dx = action.payload;
-      break;
-    }
-    case "SET_DY": {
-      dy = action.payload;
+    case "SET_VIEWPORT": {
+      dx = action.payload.dx;
+      dy = action.payload.dy;
+      zoom = action.payload.zoom;
       break;
     }
     case "SET_SIZE": {

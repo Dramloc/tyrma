@@ -8,7 +8,6 @@ import { getBounds, loadTexture } from "./texture";
 const glsl = String.raw;
 
 let canvas: OffscreenCanvas | null = null;
-let gl: WebGL2RenderingContext | null = null;
 
 let dx = 0;
 let dy = 0;
@@ -16,8 +15,24 @@ let zoom = 0;
 let dungeon: Dungeon.Dungeon | null = null;
 let animationFrame: number | null = null;
 
-const startAnimate = async (gl: WebGL2RenderingContext, dungeon: Dungeon.Dungeon) => {
+const startAnimate = async (canvas: OffscreenCanvas | null, dungeon: Dungeon.Dungeon | null) => {
+  if (animationFrame !== null) {
+    cancelAnimationFrame(animationFrame);
+    animationFrame = null;
+  }
+  if (dungeon === null) {
+    return;
+  }
+  if (canvas === null) {
+    return;
+  }
   console.time("renderInit");
+
+  const gl = canvas.getContext("webgl2");
+  if (gl === null) {
+    return;
+  }
+
   const vertexShaderSource = glsl`#version 300 es
     in vec2 a_position;
     in vec2 a_tex_coord;
@@ -142,11 +157,7 @@ globalThis.addEventListener("message", (e) => {
   switch (action.type) {
     case "SETUP": {
       canvas = action.payload as OffscreenCanvas;
-      gl = canvas.getContext("webgl2");
-      if (dungeon === null || gl === null) {
-        return;
-      }
-      startAnimate(gl, dungeon);
+      startAnimate(canvas, dungeon);
       break;
     }
     case "TEARDOWN": {
@@ -157,18 +168,13 @@ globalThis.addEventListener("message", (e) => {
     }
     case "SET_DUNGEON": {
       dungeon = action.payload as Dungeon.Dungeon;
+      startAnimate(canvas, dungeon);
       break;
     }
-    case "SET_ZOOM": {
-      zoom = action.payload;
-      break;
-    }
-    case "SET_DX": {
-      dx = action.payload;
-      break;
-    }
-    case "SET_DY": {
-      dy = action.payload;
+    case "SET_VIEWPORT": {
+      dx = action.payload.dx;
+      dy = action.payload.dy;
+      zoom = action.payload.zoom;
       break;
     }
     case "SET_SIZE": {

@@ -17,9 +17,18 @@ export const Renderer: React.FC<
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  useEffect(() => dispatch({ type: "SET_ZOOM", payload: zoom * window.devicePixelRatio }), [dispatch, zoom]);
-  useEffect(() => dispatch({ type: "SET_DX", payload: dx * window.devicePixelRatio }), [dispatch, dx]);
-  useEffect(() => dispatch({ type: "SET_DY", payload: dy * window.devicePixelRatio }), [dispatch, dy]);
+  useEffect(
+    () =>
+      dispatch({
+        type: "SET_VIEWPORT",
+        payload: {
+          dx: dx * window.devicePixelRatio,
+          dy: dy * window.devicePixelRatio,
+          zoom: zoom * window.devicePixelRatio,
+        },
+      }),
+    [dispatch, dx, dy, zoom]
+  );
 
   // Worker initialization
   useEffect(() => {
