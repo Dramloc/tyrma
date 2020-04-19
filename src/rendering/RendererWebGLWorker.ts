@@ -1,8 +1,8 @@
-import tilesetImage from "./assets/dungeon-tileset.png";
+import tilesetImage from "../assets/dungeon-tileset.png";
+import * as Dungeon from "../generation/dungeon";
+import * as Grid from "../utils/grid";
 import { getDrawImageOperations } from "./cell";
-import * as Dungeon from "./dungeon";
 import { createProgram, createShader } from "./gl";
-import * as Grid from "./grid";
 import { getBounds, loadTexture } from "./texture";
 
 const glsl = String.raw;
@@ -17,7 +17,7 @@ let dungeon: Dungeon.Dungeon | null = null;
 let animationFrame: number | null = null;
 
 const startAnimate = async (gl: WebGL2RenderingContext, dungeon: Dungeon.Dungeon) => {
-  console.time('renderInit');
+  console.time("renderInit");
   const vertexShaderSource = glsl`#version 300 es
     in vec2 a_position;
     in vec2 a_tex_coord;
@@ -114,10 +114,10 @@ const startAnimate = async (gl: WebGL2RenderingContext, dungeon: Dungeon.Dungeon
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tilesetTexture);
-  console.timeEnd('renderInit');
+  console.timeEnd("renderInit");
 
   const animate = () => {
-    console.time('render');
+    console.time("render");
     animationFrame = requestAnimationFrame(animate);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     gl.clearColor(0, 0, 0, 0);
@@ -131,7 +131,7 @@ const startAnimate = async (gl: WebGL2RenderingContext, dungeon: Dungeon.Dungeon
     gl.uniform2f(deltaUniformLocation, dx, dy);
     gl.uniform1f(scaleUniformLocation, zoom);
     gl.drawArrays(gl.TRIANGLES, 0, positions.length);
-    console.timeEnd('render');
+    console.timeEnd("render");
   };
 
   animate();

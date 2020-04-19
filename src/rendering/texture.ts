@@ -1,7 +1,7 @@
-import tileset from "./assets/dungeon-tileset.json";
-import { memoize } from "./memoize";
-import * as Random from "./random";
-import { invariant } from "./invariant";
+import tileset from "../assets/dungeon-tileset.json";
+import { invariant } from "../utils/invariant";
+import { memoize } from "../utils/memoize";
+import * as Random from "../utils/random";
 
 export const loadTexture = async (path: string): Promise<ImageBitmap> => {
   const response = await fetch(path);

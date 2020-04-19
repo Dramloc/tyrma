@@ -1,8 +1,8 @@
 /* eslint-env browser, worker */
-import tilesetImage from "./assets/dungeon-tileset.png";
+import tilesetImage from "../assets/dungeon-tileset.png";
+import * as Dungeon from "../generation/dungeon";
+import * as Grid from "../utils/grid";
 import { getDrawImageOperations } from "./cell";
-import * as Dungeon from "./dungeon";
-import * as Grid from "./grid";
 import { getBounds, loadTexture } from "./texture";
 
 const renderCell = (tilesetTexture: ImageBitmap, ctx: OffscreenCanvasRenderingContext2D, dungeon: Dungeon.Dungeon) => {

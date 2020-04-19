@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import styled from "./ui/styled";
+import styled from "../ui/styled";
 
 type TextFieldSpecification = {
   type: "text";

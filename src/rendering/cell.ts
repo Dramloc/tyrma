@@ -1,5 +1,5 @@
-import * as Grid from "./grid";
-import { memoize } from "./memoize";
+import * as Grid from "../utils/grid";
+import { memoize } from "../utils/memoize";
 
 const packNeighboors = (x: number, y: number, grid: Grid.Grid<boolean>): number => {
   // Pack the neighboors and the cell at a (x, y) location into a number

@@ -1,4 +1,4 @@
-import * as Random from "./random";
+import * as Random from "../utils/random";
 import * as Walls from "./walls";
 
 export type DungeonOptions = {

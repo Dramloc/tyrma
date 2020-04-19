@@ -1,4 +1,4 @@
-import { invariant } from "./invariant";
+import { invariant } from "../utils/invariant";
 
 export const createShader = (gl: WebGL2RenderingContext, type: GLenum, source: string): WebGLShader => {
   const shader = gl.createShader(type);

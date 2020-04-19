@@ -5,7 +5,7 @@ import Renderer2DWorker from "worker-loader!./Renderer2DWorker";
 // @ts-ignore
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import RendererWebGLWorker from "worker-loader!./RendererWebGLWorker";
-import * as Dungeon from "./dungeon";
+import * as Dungeon from "../generation/dungeon";
 
 export const Renderer: React.FC<
   RendererProps & {

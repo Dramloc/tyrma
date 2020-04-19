@@ -1,14 +1,14 @@
 import { css, Global } from "@emotion/core";
 import { ThemeProvider } from "emotion-theming";
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { ConfigurationEditor, getDefaultConfiguration, Specification } from "./ConfigurationEditor";
-import * as Dungeon from "./dungeon";
-import { Renderer2D, RendererWebGL } from "./Renderer";
+import { ConfigurationEditor, getDefaultConfiguration, Specification } from "./generation/ConfigurationEditor";
+import * as Dungeon from "./generation/dungeon";
+import { Renderer2D, RendererWebGL } from "./rendering/Renderer";
 import { Button } from "./ui/Button";
 import { CSSReset } from "./ui/CSSReset";
 import styled from "./ui/styled";
 import { theme } from "./ui/theme";
-import { useViewport } from "./useViewport";
+import { useViewport } from "./utils/useViewport";
 
 const configurationSpecification: Specification<Dungeon.DungeonOptions> = {
   seed: {

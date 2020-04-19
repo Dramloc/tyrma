@@ -1,7 +1,7 @@
-import * as Area from "./area";
-import * as Grid from "./grid";
-import * as Random from "./random";
-import * as Tree from "./tree";
+import * as Area from "../utils/area";
+import * as Grid from "../utils/grid";
+import * as Random from "../utils/random";
+import * as Tree from "../utils/tree";
 
 export type WallsOptions = {
   random: Random.RandomNumberGenerator;
