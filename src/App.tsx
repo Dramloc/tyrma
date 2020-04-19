@@ -86,7 +86,7 @@ export const App = () => {
 
   const dungeon = useMemo(() => Dungeon.generate(configuration), [configuration]);
 
-  const [render2D, setRender2D] = useState(true);
+  const [render2D, setRender2D] = useState(false);
   const toggleRendering = useCallback(() => setRender2D((render2D) => !render2D), []);
 
   // Listen for panning and zoom on the canvas
@@ -120,7 +120,7 @@ export const App = () => {
         </RendererContainer>
       </RenderersContainer>
       <Button style={{ position: "fixed", left: "1rem", bottom: "1rem" }} onClick={toggleRendering}>
-        Toggle rendering
+        {render2D ? "Show WebGL" : "Show 2D"}
       </Button>
       <ConfigurationEditor<Dungeon.DungeonOptions>
         value={configuration}

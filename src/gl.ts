@@ -38,32 +38,3 @@ export const createProgram = (
   }
   return program;
 };
-
-export const getAttributeLocation = (gl: WebGL2RenderingContext, program: WebGLProgram, name: string): number => {
-  const attributeLocation = gl.getAttribLocation(program, name);
-  invariant(attributeLocation !== -1, "Failed to retrieve attribute `%s` location.", name);
-  return attributeLocation;
-};
-
-export const createBuffer = (gl: WebGL2RenderingContext): WebGLBuffer => {
-  const buffer = gl.createBuffer();
-  if (buffer === null) {
-    gl.deleteBuffer(buffer);
-    invariant(false, "Failed to create buffer.");
-  }
-  return buffer;
-};
-
-export const createVertexArray = (gl: WebGL2RenderingContext): WebGLVertexArrayObject => {
-  const vertexArray = gl.createVertexArray();
-  if (vertexArray === null) {
-    gl.deleteBuffer(vertexArray);
-    invariant(false, "Failed to create vertex array.");
-  }
-  return vertexArray;
-};
-
-export const clear = (gl: WebGL2RenderingContext): void => {
-  gl.clearColor(0, 0, 0, 0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-};

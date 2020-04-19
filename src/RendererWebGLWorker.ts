@@ -1,22 +1,29 @@
+import tilesetImage from "./assets/dungeon-tileset.png";
+import { getDrawImageOperations } from "./cell";
 import * as Dungeon from "./dungeon";
-import { clear, createBuffer, createProgram, createShader, getAttributeLocation, createVertexArray } from "./gl";
+import { createProgram, createShader } from "./gl";
 import * as Grid from "./grid";
+import { getBounds, loadTexture } from "./texture";
 
 const glsl = String.raw;
 
 const initialize = (gl: WebGL2RenderingContext) => {
   const vertexShaderSource = glsl`#version 300 es
     in vec2 a_position;
+    in vec2 a_tex_coord;
     uniform vec2 u_resolution;
+    uniform vec2 u_tex_resolution;
     uniform vec2 u_delta;
     uniform float u_scale;
 
-    void main() {
-      vec2 tiled_position = a_position * u_scale * 16.0;
-      vec2 viewport = tiled_position + u_delta;
-      vec2 clip_space = ((viewport * 2.0 / u_resolution) - 1.0);
+    out vec2 v_tex_coord;
 
-      gl_Position = vec4(clip_space * vec2(1, -1), 0, 1);
+    void main() {
+      vec2 viewport = a_position * u_scale + u_delta;
+      vec2 clip_space = ((viewport * 2.0 / u_resolution) - 1.0) * vec2(1, -1);
+
+      gl_Position = vec4(clip_space, 0, 1);
+      v_tex_coord = a_tex_coord / u_tex_resolution;
     }
   `;
   const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
@@ -24,11 +31,12 @@ const initialize = (gl: WebGL2RenderingContext) => {
   const fragmentShaderSource = glsl`#version 300 es
     precision mediump float;
 
+    uniform sampler2D u_texture;
+    in vec2 v_tex_coord;
     out vec4 out_color;
-    uniform vec4 u_color;
 
     void main() {
-      out_color = u_color;
+      out_color = texture(u_texture, v_tex_coord);
     }
   `;
   const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
@@ -42,41 +50,77 @@ export const render = (
   dungeon: Dungeon.Dungeon,
   dx: number,
   dy: number,
-  zoom: number
+  zoom: number,
+  tilesetTexture: ImageBitmap
 ) => {
-  const positionAttributeLocation = getAttributeLocation(gl, program, "a_position");
+  const positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+  const texCoordAttributeLocation = gl.getAttribLocation(program, "a_tex_coord");
+
   const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution");
+  const texResolutionUniformLocation = gl.getUniformLocation(program, "u_tex_resolution");
   const deltaUniformLocation = gl.getUniformLocation(program, "u_delta");
   const scaleUniformLocation = gl.getUniformLocation(program, "u_scale");
-  const colorUniformLocation = gl.getUniformLocation(program, "u_color");
+  const textureUniformLocation = gl.getUniformLocation(program, "u_texture");
 
-  // Push position data in the buffer
-  const positionBuffer = createBuffer(gl);
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   const positions: number[] = [];
-  Grid.forEachWithCoordinates((wall, x, y) => {
-    if (wall === false) {
-      return;
-    }
-    positions.push(x, y, x + 1, y, x, y + 1, x + 1, y, x + 1, y + 1, x, y + 1);
+  const texCoords: number[] = [];
+  Grid.forEachWithCoordinates((value, x, y) => {
+    getDrawImageOperations(x, y, dungeon.walls).forEach(([sliceName, dx, dy]) => {
+      const bounds = getBounds(sliceName, x * 16 + dx, y * 16 + dy);
+      const x0 = x * 16 + dx;
+      const y0 = y * 16 + dy;
+      const x1 = x0 + bounds.w;
+      const y1 = y0 + bounds.h;
+      positions.push(x0, y0, x1, y0, x0, y1, x0, y1, x1, y0, x1, y1);
+      const u0 = bounds.x;
+      const u1 = u0 + bounds.w;
+      const v0 = bounds.y;
+      const v1 = v0 + bounds.h;
+      texCoords.push(u0, v0, u1, v0, u0, v1, u0, v1, u1, v0, u1, v1);
+    });
   }, dungeon.walls);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
-  const positionVao = createVertexArray(gl);
-  gl.bindVertexArray(positionVao);
+  const vao = gl.createVertexArray();
+  gl.bindVertexArray(vao);
+
+  const positionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(positionAttributeLocation);
   gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
+  const texCoordBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(texCoordAttributeLocation);
+  gl.vertexAttribPointer(texCoordAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
+  const unit = 0;
+  const texture = gl.createTexture();
+  gl.activeTexture(gl.TEXTURE0 + unit);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tilesetTexture);
+
   // Render
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  clear(gl);
+  gl.clearColor(0, 0, 0, 0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  gl.enable(gl.BLEND);
 
   gl.useProgram(program);
+  gl.bindVertexArray(vao);
   gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
+  gl.uniform2f(texResolutionUniformLocation, tilesetTexture.width, tilesetTexture.height);
   gl.uniform2f(deltaUniformLocation, dx, dy);
   gl.uniform1f(scaleUniformLocation, zoom);
-  gl.uniform4f(colorUniformLocation, 0.16862745098039217, 0.16862745098039217, 0.27058823529411763, 1);
-  gl.bindVertexArray(positionVao);
+  gl.uniform1i(textureUniformLocation, unit);
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.drawArrays(gl.TRIANGLES, 0, positions.length);
 };
 
@@ -89,12 +133,13 @@ let zoom = 0;
 let dungeon: Dungeon.Dungeon | null = null;
 let animationFrame: number | null = null;
 
-const startAnimate = (gl: WebGL2RenderingContext, dungeon: Dungeon.Dungeon) => {
+const startAnimate = async (gl: WebGL2RenderingContext, dungeon: Dungeon.Dungeon) => {
   const program = initialize(gl);
+  const tilesetTexture = await loadTexture(tilesetImage);
 
   const animate = () => {
     animationFrame = requestAnimationFrame(animate);
-    render(gl, program, dungeon, dx, dy, zoom);
+    render(gl, program, dungeon, dx, dy, zoom, tilesetTexture);
   };
   animate();
 };
